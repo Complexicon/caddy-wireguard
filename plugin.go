@@ -66,17 +66,17 @@ func (Wireguard) CaddyModule() caddy.ModuleInfo {
 func (w *Wireguard) Provision(c caddy.Context) error {
 	w.ctx = c
 
-	for name, v := range w.VNets {
-		v.log = c.Logger().Sugar().Named(name)
-		v.app = w
-		v.log.Info("provisioning...")
+	for name, vnet := range w.VNets {
+		vnet.log = c.Logger().Sugar().Named(name)
+		vnet.app = w
+		vnet.log.Info("provisioning...")
 
-		ip, err := netip.ParseAddr(v.IP)
+		ip, err := netip.ParseAddr(vnet.IP)
 		if err != nil {
 			return err
 		}
 
-		v.tun, v.tnet, err = netstack.CreateNetTUN([]netip.Addr{ip}, nil, 1280)
+		vnet.tun, vnet.tnet, err = netstack.CreateNetTUN([]netip.Addr{ip}, nil, 1280)
 		if err != nil {
 			return err
 		}
@@ -85,45 +85,45 @@ func (w *Wireguard) Provision(c caddy.Context) error {
 }
 
 func (w *Wireguard) Start() error {
-	for _, w := range w.VNets {
-		w.log.Info("starting wireguard")
+	for _, vnet := range w.VNets {
+		vnet.log.Info("starting wireguard")
 
-		w.dev = device.NewDevice(w.tun, w, &device.Logger{
-			Verbosef: func(format string, args ...any) { w.log.Debugf(format, args...) },
-			Errorf:   func(format string, args ...any) { w.log.Errorf(format, args...) },
+		vnet.dev = device.NewDevice(vnet.tun, vnet, &device.Logger{
+			Verbosef: func(format string, args ...any) { vnet.log.Debugf(format, args...) },
+			Errorf:   func(format string, args ...any) { vnet.log.Errorf(format, args...) },
 		})
 
-		u := new(uapiHelper)
+		uapi := new(uapiHelper)
 
-		u.Add("private_key", b64tohex(w.PrivateKey))
-		u.Add("replace_peers", "true")
+		uapi.Add("private_key", b64tohex(vnet.PrivateKey))
+		uapi.Add("replace_peers", "true")
 
-		if w.ListenPort != 0 {
-			u.Add("listen_port", strconv.Itoa(int(w.ListenPort)))
+		if vnet.ListenPort != 0 {
+			uapi.Add("listen_port", strconv.Itoa(int(vnet.ListenPort)))
 		}
 
-		for _, p := range w.Peers {
-			u.Add("public_key", b64tohex(p.PublicKey))
-			u.Add("allowed_ip", fmt.Sprintf("%s/32", p.IP))
+		for _, peer := range vnet.Peers {
+			uapi.Add("public_key", b64tohex(peer.PublicKey))
+			uapi.Add("allowed_ip", fmt.Sprintf("%s/32", peer.IP))
 
-			if p.Endpoint != "" {
-				u.Add("endpoint", p.Endpoint)
+			if peer.Endpoint != "" {
+				uapi.Add("endpoint", peer.Endpoint)
 			}
 
-			if p.KeepAlive > 0 {
-				u.Add("persistent_keepalive_interval", strconv.Itoa(p.KeepAlive))
+			if peer.KeepAlive > 0 {
+				uapi.Add("persistent_keepalive_interval", strconv.Itoa(peer.KeepAlive))
 			}
 
-			if p.PreSharedKey != "" {
-				u.Add("preshared_key", b64tohex(p.PreSharedKey))
+			if peer.PreSharedKey != "" {
+				uapi.Add("preshared_key", b64tohex(peer.PreSharedKey))
 			}
 		}
 
-		if err := w.dev.IpcSet(u.String()); err != nil {
+		if err := vnet.dev.IpcSet(uapi.String()); err != nil {
 			return err
 		}
 
-		if err := w.dev.Up(); err != nil {
+		if err := vnet.dev.Up(); err != nil {
 			return err
 		}
 	}
@@ -133,9 +133,9 @@ func (w *Wireguard) Start() error {
 
 func (w *Wireguard) Stop() error {
 
-	for _, v := range w.VNets {
-		v.log.Info("stopping wireguard")
-		v.dev.Close()
+	for _, vnet := range w.VNets {
+		vnet.log.Info("stopping wireguard")
+		vnet.dev.Close()
 	}
 
 	return nil

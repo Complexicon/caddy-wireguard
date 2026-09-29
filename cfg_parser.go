@@ -80,24 +80,24 @@ func parseCfg(d *caddyfile.Dispenser, existingVal any) (any, error) {
 					return nil, d.ArgErr()
 				}
 
-				p := Peer{}
+				peer := Peer{}
 
 				for {
 					switch d.Val() {
 					case "public_key":
-						if err := getArg(d, &p.PublicKey); err != nil {
+						if err := getArg(d, &peer.PublicKey); err != nil {
 							return nil, err
 						}
 					case "psk":
-						if err := getArg(d, &p.PreSharedKey); err != nil {
+						if err := getArg(d, &peer.PreSharedKey); err != nil {
 							return nil, err
 						}
 					case "alias":
-						if err := getArg(d, &p.Alias); err != nil {
+						if err := getArg(d, &peer.Alias); err != nil {
 							return nil, err
 						}
 					case "ip":
-						if err := getArg(d, &p.IP); err != nil {
+						if err := getArg(d, &peer.IP); err != nil {
 							return nil, err
 						}
 
@@ -106,12 +106,12 @@ func parseCfg(d *caddyfile.Dispenser, existingVal any) (any, error) {
 						}
 
 					case "endpoint":
-						if err := getArg(d, &p.Endpoint); err != nil {
+						if err := getArg(d, &peer.Endpoint); err != nil {
 							return nil, err
 						}
 
 					case "keepalive":
-						if err := getArg(d, &p.KeepAlive); err != nil {
+						if err := getArg(d, &peer.KeepAlive); err != nil {
 							return nil, err
 						}
 					default:
@@ -123,7 +123,7 @@ func parseCfg(d *caddyfile.Dispenser, existingVal any) (any, error) {
 					}
 				}
 
-				vnet.Peers = append(vnet.Peers, p)
+				vnet.Peers = append(vnet.Peers, peer)
 			default:
 				return nil, d.Errf("unknown subdirective %q", d.Val())
 			}

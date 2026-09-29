@@ -41,19 +41,19 @@ func mkWGListener(protocol string) caddy.ListenerFunc {
 			return nil, err
 		}
 
-		var ln any
+		var lsnr any
 
 		switch protocol {
 		case "tcp":
-			ln, err = stack.ListenTCPAddrPort(netip.MustParseAddrPort(net.JoinHostPort(ip, port)))
+			lsnr, err = stack.ListenTCPAddrPort(netip.MustParseAddrPort(net.JoinHostPort(ip, port)))
 		case "udp":
-			ln, err = stack.ListenUDPAddrPort(netip.MustParseAddrPort(net.JoinHostPort(ip, port)))
+			lsnr, err = stack.ListenUDPAddrPort(netip.MustParseAddrPort(net.JoinHostPort(ip, port)))
 		}
 
 		if err != nil {
 			return nil, err
 		}
 
-		return ln, nil
+		return lsnr, nil
 	}
 }
