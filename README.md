@@ -1,59 +1,15 @@
 # caddy-wireguard
 
-A Caddy module that exposes WireGuard-backed virtual networks and lets Caddy route traffic through them. It registers custom listener networks (`wg`, `wg+tcp`, `wg+udp`) and a layer-4 helper named `proxy_wg` so you can bind services to a virtual WireGuard interface and forward connections to a peer.
-
-This project is useful when you want Caddy to serve or proxy traffic as if it were running on an in-memory WireGuard interface, while still using the normal Caddyfile and Caddy networking model.
+A Caddy module that exposes WireGuard-backed virtual networks and lets Caddy route traffic through them, because why not :)
 
 ## Features
 
-- Creates one or more WireGuard virtual networks using `wireguard { ... }`
-- Attaches each vnet to a private IP and sets up WireGuard peer definitions
-- Exposes network listeners through `wg`, `wg+tcp`, and `wg+udp`
+- Create one or more WireGuard virtual networks
+- Fully integrates with other "full"-featured Wireguard peers
+- Exposes network custom listeners through `wg`/`wg+tcp` and `wg+udp`
 - Supports HTTP and layer-4 routing through WireGuard peers via `proxy_wg`
-- Allows Caddy to bind sites to a vnet with `bind "" wg/tun0` patterns
-
-## Example Caddyfile
-
-```caddyfile
-{
-    debug
-    admin off
-    skip_install_trust
-    auto_https disable_redirects
-
-    wireguard {
-        vnet tun0 {
-            private_key "mA0HtmCk07swY8Uxft/dAYQ6FXKf1cwsk7Wska7Me2k="
-            ip 10.0.0.2
-
-            peer {
-                public_key "2CqqDrfH6I15EoGF/5YPZSTEy8hF1fO0Gf+VhVGabl8="
-                ip 10.0.0.1
-                keepalive 25
-                endpoint 192.168.5.56:51820
-            }
-        }
-    }
-
-    layer4 {
-        tcp/:2200 {
-            route {
-                proxy_wg tun0 10.0.0.1:2202
-            }
-        }
-        tcp/:8080 {
-            route {
-                proxy_wg tun0 10.0.0.1:80
-            }
-        }
-    }
-}
-
-http://:8000 {
-    bind "" wg/tun0
-    respond "test"
-}
-```
+- Allows Caddy to bind sites to a vnet with `bind wg/<vnet name>`
+- (ab)use as a replacement for cloudflare tunnels
 
 ## Configuration reference
 
@@ -117,12 +73,8 @@ Then start Caddy with your configured Caddyfile.
 
 ## Notes
 
-This project is still experimental. The repository includes a `todos.md` file with follow-up work such as improving the slop proxy implementation and adding additional routing behavior. For production use, test carefully and verify WireGuard peer and network semantics in your environment.
+This project is a toy project and experimental, a lot of use cases were hand tested and work but those that werent tested probably wont
 
-## License
+## thanks
 
-This project does not currently declare a license file in the repository snapshot. Check the repository for the canonical licensing terms before using it in production.
-
-## Repository status
-
-This repo is a Go project (`module caddy-wg`) built around Caddy v2 and WireGuard (`golang.zx2c4.com/wireguard`).
+This project wouldnt be possible without Caddy and WireGuard (`golang.zx2c4.com/wireguard`).
