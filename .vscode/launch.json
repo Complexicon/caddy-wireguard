@@ -1,0 +1,24 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Launch Package",
+			"type": "go",
+			"request": "launch",
+			"mode": "auto",
+			"output": "debug",
+			"program": "${workspaceFolder}/cmd/test",
+			"console": "integratedTerminal",
+			"buildFlags": [
+				"-tags=debug"
+			],
+			"cwd": "${workspaceFolder}",
+			"args": [
+				"run",
+				"-c",
+				"Caddyfile",
+				"--watch"
+			]
+		}
+	]
+}

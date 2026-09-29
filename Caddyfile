@@ -1,0 +1,43 @@
+{
+	debug
+	admin off
+	skip_install_trust
+	auto_https disable_redirects
+
+	wireguard {
+		vnet tun0 {
+			private_key "mA0HtmCk07swY8Uxft/dAYQ6FXKf1cwsk7Wska7Me2k="
+			ip 10.0.0.2
+
+			peer {
+				public_key "2CqqDrfH6I15EoGF/5YPZSTEy8hF1fO0Gf+VhVGabl8="
+				ip 10.0.0.1
+				keepalive 25
+				endpoint 192.168.5.56:51820
+			}
+		}
+	}
+
+	layer4 {
+		tcp/:2200 {
+			route {
+				proxy_wg tun0 10.0.0.1:2202
+			}
+		}
+		tcp/:8080 {
+			route {
+				proxy_wg tun0 10.0.0.1:80
+			}
+		}
+		tcp/:4445 {
+			route {
+				proxy_wg tun0 10.0.0.1:445
+			}
+		}
+	}
+}
+
+http://:8000 {
+	bind "" wg/tun0
+	respond "test"
+}
