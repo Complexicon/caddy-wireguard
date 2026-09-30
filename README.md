@@ -22,13 +22,12 @@ wireguard {
         ip <virtual-ip>
         listen_port <port>       # optional
 
-        peer {
+        peer [<alias>] {
             public_key <base64 key>
             ip <peer-ip>
             psk <base64 key>       # optional
             endpoint <host:port>   # optional
             keepalive <seconds>     # optional
-            alias <name>           # optional, currently informational
         }
     }
 }
