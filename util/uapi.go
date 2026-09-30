@@ -1,8 +1,12 @@
-package caddy_wg
+package util
 
 import "strings"
 
 type uapiHelper [][2]string
+
+func Uapi() *uapiHelper {
+	return new(uapiHelper)
+}
 
 func (u *uapiHelper) Add(key, value string) {
 	*u = append(*u, [2]string{key, value})

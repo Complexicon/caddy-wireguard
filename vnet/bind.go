@@ -1,4 +1,4 @@
-package caddy_wg
+package vnet
 
 import (
 	"fmt"
@@ -8,6 +8,8 @@ import (
 	"github.com/caddyserver/caddy/v2"
 	"golang.zx2c4.com/wireguard/conn"
 )
+
+var _ conn.Bind = (*VNet)(nil)
 
 func (v *VNet) SetMark(mark uint32) error {
 	return fmt.Errorf("socket marks unsupported")
@@ -45,7 +47,7 @@ func (v *VNet) Open(port uint16) ([]conn.ReceiveFunc, uint16, error) {
 
 	if addr, err := caddy.ParseNetworkAddress(fmt.Sprintf("udp/:%d", port)); err != nil {
 		return nil, 0, err
-	} else if caddyLsnr, err := addr.Listen(v.app.ctx, 0, net.ListenConfig{}); err != nil {
+	} else if caddyLsnr, err := addr.Listen(v.ctx, 0, net.ListenConfig{}); err != nil {
 		return nil, 0, err
 	} else if socket, ok := caddyLsnr.(net.PacketConn); !ok {
 		return nil, 0, fmt.Errorf("unexpected listener type")

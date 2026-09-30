@@ -1,4 +1,4 @@
-module caddy-wg
+module github.com/Complexicon/caddy-wireguard
 
 go 1.26.3
 

@@ -25,7 +25,7 @@ func mkWGListener(protocol string) caddy.ListenerFunc {
 		} else if vnet, ok := wg.VNets[host]; !ok {
 			return nil, fmt.Errorf("invalid vnet %s", host)
 		} else {
-			stack = vnet.tnet
+			stack = vnet.Netstack()
 			ip = vnet.IP
 		}
 

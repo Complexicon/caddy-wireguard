@@ -9,7 +9,7 @@
 			private_key "mA0HtmCk07swY8Uxft/dAYQ6FXKf1cwsk7Wska7Me2k="
 			ip 10.0.0.2
 
-			peer {
+			peer molpe {
 				public_key "2CqqDrfH6I15EoGF/5YPZSTEy8hF1fO0Gf+VhVGabl8="
 				ip 10.0.0.1
 				keepalive 25
