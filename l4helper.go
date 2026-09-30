@@ -11,7 +11,6 @@ import (
 	"github.com/mholt/caddy-l4/layer4"
 	_ "github.com/mholt/caddy-l4/modules/l4proxy"
 	"go.uber.org/zap"
-	"golang.zx2c4.com/wireguard/tun/netstack"
 )
 
 type WGLayer4Helper struct {
@@ -35,25 +34,20 @@ func (WGLayer4Helper) CaddyModule() caddy.ModuleInfo {
 }
 
 func (w *WGLayer4Helper) Handle(downstream *layer4.Connection, _ layer4.Handler) error {
-	var stack *netstack.Net
-	var dst netip.Addr
 
-	if app, err := w.ctx.App("wireguard"); err != nil {
+	vnet, err := getVNet(w.ctx, w.DstIface)
+
+	if err != nil {
 		return err
-	} else if wg, ok := app.(*Wireguard); !ok {
-		return fmt.Errorf("failed to get active wireguard instance")
-	} else if vnet, ok := wg.VNets[w.DstIface]; !ok {
-		return fmt.Errorf("invalid vnet %s", w.DstIface)
-	} else {
-		stack = vnet.Netstack()
-		dst = w.address
+	}
 
-		if len(w.alias) > 0 {
-			if dst, err = vnet.IPByAlias(w.alias); err != nil {
-				return fmt.Errorf("invalid destination alias %s @ %s", w.alias, vnet.Name)
-			}
+	stack := vnet.Netstack()
+	dst := w.address
+
+	if len(w.alias) > 0 {
+		if dst, err = vnet.IPByAlias(w.alias); err != nil {
+			return fmt.Errorf("invalid destination alias %s @ %s", w.alias, vnet.Name)
 		}
-
 	}
 
 	upstreamAddr := netip.AddrPortFrom(dst, w.port).String()
@@ -89,18 +83,6 @@ func (w *WGLayer4Helper) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 	w.DstAddress = d.Val()
 
 	return nil
-}
-
-func parseAddress(addr string) (*caddy.NetworkAddress, error) {
-	address, err := caddy.ParseNetworkAddress(addr)
-	if err != nil {
-		return nil, err
-	}
-
-	if address.PortRangeSize() != 1 {
-		return nil, fmt.Errorf("%s: port ranges are currently not supported", addr)
-	}
-	return &address, nil
 }
 
 func (w *WGLayer4Helper) Provision(c caddy.Context) error {
